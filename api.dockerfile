@@ -1,21 +1,20 @@
-# Usa una imagen base de Golang
 FROM golang:latest
 
-# Establece el directorio de trabajo dentro del contenedor
-WORKDIR /go/src/app
+# Set destination for COPY
+WORKDIR /app
 
-# Copia los archivos del proyecto al directorio de trabajo del contenedor
-COPY ./api .
-COPY ./.env .
+# Download Go modules
+COPY go.mod go.sum ./
+RUN go mod download
 
-# Descarga las dependencias del proyecto
-RUN go get -d -v ./...
+# Copy the source code and env variables
+COPY . .
 
-# Compila la aplicación
-RUN go install -v ./...
+# Build
+RUN go build -o ./movies-api -v ./src/api
 
-# Expone el puerto en el que la aplicación se ejecutará
-EXPOSE 8080
+# Expose port
+EXPOSE 4000
 
-# Comando para ejecutar la aplicación
-CMD ["app"]
+# Run
+CMD ["./movies-api"]

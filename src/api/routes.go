@@ -14,16 +14,16 @@ func (app *application) routes() http.Handler {
 	})*/
 
 	// Movies endpoints (auth required)
-	router.Handler(http.MethodGet, "/movies", app.requireAuthentication(http.HandlerFunc(app.getAllMovies)))
-	router.Handler(http.MethodPost, "/movie", app.requireAuthentication(http.HandlerFunc(app.addMovie)))
-	router.Handler(http.MethodGet, "/movie/:id", app.requireAuthentication(http.HandlerFunc(app.getMovie)))
-	router.Handler(http.MethodDelete, "/movie/:id", app.requireAuthentication(http.HandlerFunc(app.deleteMovie)))
-	router.Handler(http.MethodPut, "/movie/:id", app.requireAuthentication(http.HandlerFunc(app.updateMovie)))
+	router.Handler(http.MethodGet, "/movies", app.requireAuthentication(app.getAllMovies))
+	router.Handler(http.MethodPost, "/movie", app.requireAuthentication(app.addMovie))
+	router.Handler(http.MethodGet, "/movie/:id", app.requireAuthentication(app.getMovie))
+	router.Handler(http.MethodDelete, "/movie/:id", app.requireAuthentication(app.deleteMovie))
+	router.Handler(http.MethodPut, "/movie/:id", app.requireAuthentication(app.updateMovie))
 
 	// Favourites movies endpoints (auth required)
-	router.Handler(http.MethodPost, "/favourites", app.requireAuthentication(http.HandlerFunc(app.addMovieToFav)))
-	router.Handler(http.MethodGet, "/favourites", app.requireAuthentication(http.HandlerFunc(app.getFavMovies)))
-	router.Handler(http.MethodDelete, "/favourites/:id", app.requireAuthentication(http.HandlerFunc(app.deleteMovieFromFav)))
+	router.Handler(http.MethodPost, "/favourites", app.requireAuthentication(app.addMovieToFav))
+	router.Handler(http.MethodGet, "/favourites", app.requireAuthentication(app.getFavMovies))
+	router.Handler(http.MethodDelete, "/favourites/:id", app.requireAuthentication(app.deleteMovieFromFav))
 
 	// Authentication endpoints
 	router.HandlerFunc(http.MethodPost, "/user/signup", app.userSignup)

@@ -7,47 +7,57 @@ import (
 
 	"films-api.rdelgado.es/src/internals/authentication"
 	"films-api.rdelgado.es/src/internals/models"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 func main() {
-	//Estas variables debería cogerlas del entorno
-	dsn := "movies_user:movies789@tcp(127.0.0.1:3306)/moviesdb?charset=utf8mb4&parseTime=True&loc=Local"
-	secretJwt := []byte("test_secret")
 
+	// enviroment variables
+	db_hostname := os.Getenv("MYSQL_HOSTNAME")
+	db_name := os.Getenv("MYSQL_DATABASE")
+	db_user := os.Getenv("MYSQL_USER")
+	db_password := os.Getenv("MYSQL_PASSWORD")
+	jwt_secret := os.Getenv("JWT_SECRET")
+	server_port := os.Getenv("API_PORT")
+
+	// init logger
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{TranslateError: true})
+	// init database conn
+	db, err := InitDB(db_hostname, db_name, db_user, db_password)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
+	// migrate schemas db
 	err = db.AutoMigrate(&models.User{}, &models.Movie{}, &models.Favourite{})
 	if err != nil && db.Migrator().HasTable(&models.Movie{}) {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
+	// create app struct (models, etc)
 	app := &application{
 		logger: logger,
 		movies: &models.MovieModel{DB: db},
 		users:  &models.UserModel{DB: db},
 		favs:   &models.FavouriteModel{DB: db},
-		tokens: &authentication.JwtToken{SecretJwt: secretJwt},
+		tokens: &authentication.JwtToken{SecretJwt: []byte(jwt_secret)},
 	}
 
-	app.seedData(db)
+	// seed db (if db is empty)
+	app.seedDB(db)
 
-	addr := ":4000"
-	logger.Info("stating movies api server", slog.String("port", addr))
+	// init http server
+	addr := ":" + server_port
 
 	server := &http.Server{
 		Addr:     addr,
 		Handler:  app.routes(),
 		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
+
+	logger.Info("stating movies api server", slog.String("port", addr))
 
 	err = server.ListenAndServe()
 	logger.Error(err.Error())

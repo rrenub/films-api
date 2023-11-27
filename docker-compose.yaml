@@ -2,18 +2,30 @@ version: '3.8'
 services:
   mysql:
     image: mysql
-    container_name: mysql
+    container_name: movies-db
+    hostname: movies-db
     volumes:
       - data:/var/lib/mysql
+    ports:
+      - "3306:3306"
     env_file:
       - "./.env"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
   api:
+    container_name: movies-api
+    image: image/movies-api
     build: 
       context: .
       dockerfile: api.dockerfile
     ports:
-      - "8080:8080"
+      - "${API_PORT}:${API_PORT}"
     env_file:
-      - ./.env
+      - "./.env"
+    depends_on:
+      mysql:
+        condition: service_healthy
 volumes:
   data:

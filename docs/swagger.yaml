@@ -1,0 +1,19 @@
+openapi: 3.0.0
+info:
+  title: Movies API
+  description: API to view, create and delete movies with user authentication
+  version: 1.0.0
+paths:
+  /users/login:
+    post:
+      summary: Log in user
+      description: Log in user 
+      request:
+        body:
+      responses:
+        '200':    
+          description: User logged in succesfully
+        '401':    
+          description: User failed to log in
+        '400':
+          description: Username or password do not comply with requirements

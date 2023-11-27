@@ -40,11 +40,13 @@ func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
 		} else {
 			app.serverError(w, r, err)
 		}
+		return
 	}
 
 	token, err := app.tokens.CreateToken(id)
 	if err != nil {
 		app.serverError(w, r, err)
+		return
 	}
 
 	w.Header().Set("Authorization", "Bearer "+token)
