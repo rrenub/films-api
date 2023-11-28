@@ -69,10 +69,8 @@ func (t *JwtToken) CreateToken(id int) (string, error) {
 		"exp":     time.Now().Add(24 * time.Hour).Unix(),
 	}
 
-	// Crear un nuevo token con los claims y el método de firma
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	// Firmar y obtener el token codificado como string
 	tokenString, err := token.SignedString(t.SecretJwt)
 	if err != nil {
 		return "", err

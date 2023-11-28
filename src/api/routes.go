@@ -21,7 +21,7 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodPut, "/movie/:id", app.requireAuthentication(app.updateMovie))
 
 	// Favourites movies endpoints (auth required)
-	router.Handler(http.MethodPost, "/favourites", app.requireAuthentication(app.addMovieToFav))
+	router.Handler(http.MethodPost, "/favourite", app.requireAuthentication(app.addMovieToFav))
 	router.Handler(http.MethodGet, "/favourites", app.requireAuthentication(app.getFavMovies))
 	router.Handler(http.MethodDelete, "/favourites/:id", app.requireAuthentication(app.deleteMovieFromFav))
 

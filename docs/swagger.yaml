@@ -3,17 +3,354 @@ info:
   title: Movies API
   description: API to view, create and delete movies with user authentication
   version: 1.0.0
+servers:
+  - url: "http://localhost:4000"
+security:
+  - BearerAuth: []
+tags:
+  - name: movies
+    description: Manage and view movies
+  - name: favourites
+    description: Manage user's favourite list
+  - name: users
+    description: Perform user login and signup
 paths:
-  /users/login:
+
+  /favourites:
+    get:
+      tags:
+        - favourites
+      summary: Get favourite movies
+      description: Get favourite movies of a specific user
+      responses:
+        '200':    
+          description: Movie added to favourites succesfully
+        '404':    
+          description: User has no favourite movies yet
+        '500':
+          description: Internal server error
+
+  /favourite/{fav_id}:
+    delete:
+      tags:
+        - favourites
+      summary: Remove movie from favourite list
+      description: Remove a specific movie from user's favourite list
+      parameters:
+        - in: path
+          required: true
+          name: fav_id
+          schema:
+            type: string
+          description: ID of the favourite movie row
+      responses:
+        '200':    
+          description: Movie remove from user's favourite succesfully
+        '404':    
+          description: Movie not found
+        '500':
+          description: Internal server error
+
+  /favourite:
     post:
+      tags:
+        - favourites
+      summary: Add movie to favourite
+      description: Add movie to user favourite list
+      requestBody:
+        description: ID of the movie to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavouriteMovieRequest'
+      responses:
+        '200':    
+          description: Movie added to favourites succesfully
+        '400':    
+          description: Invalid request 
+        '422': 
+          description: Invalid field of request (ID must be positive number)
+        '409':
+          description: Movie already added to user's favourite
+        '500':
+          description: Internal server error
+
+  /movies:
+    get:
+      tags:
+        - movies
+      summary: Get all movies
+      description: Get the list of movies with optional filters
+      parameters:
+        - in: query
+          name: title
+          schema:
+            type: string
+          description: Filter movies by title similar to used filter
+        - in: query
+          name: genre
+          schema:
+            type: string
+          description: Filter movies by genre
+        - in: query
+          name: year
+          schema:
+            type: string
+          description: Filter movies released in the filtered year
+      responses:
+        '200':    
+          description: List of movies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movies'
+        '404':    
+          description: No movies available (empty data)
+        '400':
+          description: Bad request (invalid year filter format)
+        '500':
+          description: Internal server error
+    
+  /movie:
+    post:
+      tags:
+        - movies
+      summary: Create movie
+      description: Create a new movie
+      requestBody:
+        description: Information to create a new movie
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieRequest'
+      responses:
+        '200':    
+          description: Movie created succesfully
+        '400':    
+          description: Invalid request
+        '409':
+          description: Movie already created
+        '422':    
+          description: Request fields are not valid (fields may be empty)
+        '500':
+          description: Internal server error
+
+  /movie/{movieId}:
+    get:
+      tags:
+        - movies
+      summary: Get specific movie information
+      description: Get movie information and author
+      parameters:
+        - in: path
+          required: true
+          name: movieId
+          schema:
+            type: string
+          description: ID of the movie
+      responses:
+        '200':    
+          description: Movie and author information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieWithAuthor'
+        '404':    
+          description: Movie not found
+        '500':
+          description: Internal server error
+
+    delete:
+      tags:
+        - movies
+      summary: Delete movie
+      description: Delete a specific movie
+      parameters:
+        - in: path
+          required: true
+          name: movieId
+          schema:
+            type: string
+          description: ID of the movie
+      responses:
+        '200':    
+          description: Movie deleted succesfully
+        '404':    
+          description: Movie not found
+        '403':
+          description: Operation not allowed (User has not created the movie to delete)
+        '500':
+          description: Internal server error
+    put:
+        tags:
+          - movies
+        summary: Edit movie
+        description: Edit information of a specific movie
+        parameters:
+          - in: path
+            required: true
+            name: movieId
+            schema:
+              type: string
+            description: ID of the movie
+        responses:
+          '200':    
+            description: Movie edited succesfully
+          '400':    
+            description: Invalid request
+          '404':    
+            description: Movie not found
+          '403':
+            description: Operation not allowed (User has not created the movie to delete)
+          '500':
+            description: Internal server error
+
+  /user/login:
+    post:
+      tags:
+        - users
+      security: []
       summary: Log in user
       description: Log in user 
-      request:
-        body:
+      requestBody:
+        description: Credentials for log in
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
       responses:
         '200':    
           description: User logged in succesfully
         '401':    
           description: User failed to log in
+        '500':
+          description: Internal server error
+
+  /user/signup:
+    post:
+      tags:
+        - users
+      security: []
+      summary: Sign up user
+      description: Create a new user to access the API
+      requestBody:
+        description: Credentials for sign up
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':    
+          description: User created succesfully
         '400':
           description: Username or password do not comply with requirements
+        '409':
+          description: User already created
+        '500':
+          description: Internal server error
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      properties:
+        name:
+          type: string
+          description: "Must be alphanumeric and start with a letter"
+          pattern: "^[a-zA-Z][a-zA-Z0-9]*$"
+        password:
+          type: string
+          description: Must contain atleast one number, lower case and upper case letter and a symbol
+          minLength: 8
+          maxLength: 24
+          pattern: "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\",./<>?]).+$"
+      example:   # Sample object
+        name: bob
+        password: Secret.password1
+    Movie:
+      properties:
+        id: 
+          type: integer
+        title:
+          type: string
+        director:
+          type: string
+        release_date:
+          type: string
+          format: date
+        cast:
+          type: array
+          items:
+            type: string
+        genre:
+          type: string
+        synopsis:
+          type: string
+        user_id:
+          type: integer
+      example:   
+        id: 10
+        title: Interstellar
+        director: Christopher Nolan
+        release_date: "1999-03-31T00:00:00Z"
+        cast: ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"]
+        genre: Science Fiction
+        synopsis: "A group of explorers travels through a wormhole in space in an attempt to ensure humanity's survival."
+        user_id: 1
+    MovieRequest:
+      properties:
+        title:
+          type: string
+        director:
+          type: string
+        release_date:
+          type: string
+          format: date
+        cast:
+          type: array
+          items:
+            type: string
+        genre:
+          type: string
+        synopsis:
+          type: string
+      example:   
+        title: Interstellar
+        director: Christopher Nolan
+        release_date: "1999-03-31T00:00:00Z"
+        cast: ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"]
+        genre: Science Fiction
+        synopsis: "A group of explorers travels through a wormhole in space in an attempt to ensure humanity's survival."
+    CreatedBy:
+      properties:
+        name:
+          type: string
+        user_id:
+          type: integer
+      example:   
+        name: bob
+        user_id: 1
+    MovieWithAuthor:
+      properties:
+        movie:
+          $ref: '#/components/schemas/Movie'
+        created_by:
+          $ref: '#/components/schemas/CreatedBy'
+    Movies:
+      properties:
+        movies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Movie'
+    FavouriteMovieRequest:
+      properties:
+        movie_id:
+          type: integer

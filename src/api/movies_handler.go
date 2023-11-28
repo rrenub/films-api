@@ -105,7 +105,6 @@ func (app *application) updateMovie(w http.ResponseWriter, r *http.Request) {
 func (app *application) getAllMovies(w http.ResponseWriter, r *http.Request) {
 
 	// Get query params for optional filtering movies
-	// TODO: refactorizar esto para usar un bucle for sobre los query params
 	filters := make(map[string]interface{})
 	if title := r.URL.Query().Get("title"); title != "" {
 		filters["title"] = title
@@ -113,7 +112,7 @@ func (app *application) getAllMovies(w http.ResponseWriter, r *http.Request) {
 	if genre := r.URL.Query().Get("genre"); genre != "" {
 		filters["genre"] = genre
 	}
-	if year := r.URL.Query().Get("year"); year != "" { //TODO: comprobar que el filtro de pelicula sea válido
+	if year := r.URL.Query().Get("year"); year != "" {
 
 		yearNumber, err := strconv.Atoi(year) // Check if year is a valid int (2019, 2022, etc)
 		if err != nil && yearNumber < 1 {

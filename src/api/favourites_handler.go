@@ -80,6 +80,12 @@ func (app *application) addMovieToFav(w http.ResponseWriter, r *http.Request) {
 
 	req.CheckField(validator.IsPositiveNumber(req.MovieID), "movie", "This field must be movie ID")
 
+	if !req.IsValid() {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		json.NewEncoder(w).Encode(req.FieldErrors)
+		return
+	}
+
 	id, err := app.favs.Insert(userId, req.MovieID)
 	if err != nil {
 		if errors.Is(err, models.ErrDuplicatedEntry) {
@@ -87,6 +93,7 @@ func (app *application) addMovieToFav(w http.ResponseWriter, r *http.Request) {
 		} else {
 			app.serverError(w, r, err)
 		}
+		return
 
 	}
 
