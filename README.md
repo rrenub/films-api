@@ -6,9 +6,12 @@ The API connects to an MySQL database using GORM (ORM library for Golang) and th
 
 ## Features
 
-- [x] View, create, delete and edit movies
-- [x] User authentication (login and signup) using JWT tokens
-- [x] Add movies to favourite and manage user's favourite lists
+- View, create, delete and edit movies
+- User authentication (login and signup) using JWT tokens
+- Add movies to favourite and manage user's favourite lists
+- Configurable using .env file
+- Easy deployment using docker compose
+- Documentation using Swagger 
 
 ## Deployment
 
@@ -21,9 +24,11 @@ The API uses enviroment variables for configuration and docker compose for easy 
 ```
 docker compose up -d
 ```
-3. Test the API !
+3. Test the API. Use `docs/swagger.yaml` documentation for help.
 
-To shutdown resources and volumes:
+Database will automatically be populated with sample data and users.
+
+**NOTE:** To shutdown resources and volumes:
 
 ```
 docker compose down --rmi all -v
@@ -40,6 +45,7 @@ For this API, I decided to use `httprouter` as it is a very lightweight package 
 
 ## Future improvements
 
-- [ ] Use HTTPS in the API (TLS)
-
+- [ ] Use HTTPS in the API (TLS).
+- [ ] Add `/top` endpoint to list most favourited movies.
+- [ ] Create `directors`, `actors` and `genre` database tables to allow more complex relations and queries.
 
