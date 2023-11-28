@@ -26,7 +26,12 @@ docker compose up -d
 ```
 3. Test the API. Use `docs/swagger.yaml` documentation for help.
 
-Database will automatically be populated with sample data and users.
+*Database will automatically be populated with sample data and users when migrating database schema first time.*
+
+**NOTE:** To check server logs while using the API:
+```
+docker logs movies-api
+```
 
 **NOTE:** To shutdown resources and volumes:
 
